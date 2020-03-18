@@ -1,0 +1,29 @@
+.App {
+  font-family: sans-serif;
+  text-align: center;
+}
+
+h4 {
+  margin-top: 50px;
+  margin-left: 50%;
+}
+
+.todo-item-container {
+  margin-top: 5px;
+  margin-left: 50%;
+}
+
+.button-add {
+  margin-left: 4px;
+  background-color: blue;
+  color: white;
+}
+
+.table-todo {
+  margin-left: -5px;
+  margin-top: 25px;
+}
+
+.done {
+  margin-left: 15px;
+}
