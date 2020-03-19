@@ -1,4 +1,8 @@
 import React, { Component } from "react";
+import { TodoBanner } from "./TodoBanner";
+import { TodoCreator } from "./TodoCreator";
+import { TodoRow } from "./TodoRow";
+import { VisibilityControl } from "./VisibilityControl";
 
 import "./App.css";
 
@@ -13,7 +17,7 @@ export default class App extends Component {
         { action: "Add modal functionality", done: false },
         { action: "Add back the header/footer", done: false }
       ],
-      newItemText: ""
+      showCompleted: true
     };
   }
 
@@ -21,17 +25,14 @@ export default class App extends Component {
     this.setState({ newItemText: e.target.value });
   };
 
-  createNewToDo = () => {
-    if (
-      !this.state.todoItems.find(item => item.action === this.state.newItemText)
-    ) {
-      this.setState({
-        todoItems: [
-          ...this.state.todoItems,
-          { action: this.state.newItemText, done: false }
-        ],
-        newItemText: ""
-      });
+  createNewToDo = task => {
+    if (!this.state.todoItems.find(item => item.action === task)) {
+      this.setState(
+        {
+          todoItems: [...this.state.todoItems, { action: task, done: false }]
+        },
+        () => localStorage.setItem("todos", JSON.stringify(this.state))
+      );
     }
   };
 
@@ -42,50 +43,67 @@ export default class App extends Component {
       )
     });
 
-  todoTableRows = () =>
-    this.state.todoItems.map(item => (
-      <tr key={item.action}>
-        <td>{item.action}</td>
-        <td>
-          <input
-            className="done"
-            type="checkbox"
-            checked={item.done}
-            onChange={() => this.toggleTodo(item)}
-          />
-        </td>
-      </tr>
-    ));
+  todoTableRows = doneValue =>
+    this.state.todoItems
+      .filter(item => item.done === doneValue)
+      .map(item => (
+        <TodoRow key={item.action} item={item} callback={this.toggleTodo} />
+      ));
 
-  render() {
-    return (
-      <div>
-        <h4 className="title">
-          {this.state.userName}'s To Do List (
-          {this.state.todoItems.filter(t => !t.done).length} items to do)
-        </h4>
-        <div className="todo-item-container">
-          <div className="todo-item">
-            <input
-              className="form-control"
-              value={this.state.newItemText}
-              onChange={this.updateNewTextValue}
-            />
-            <button className="button-add" onClick={this.createNewToDo}>
-              Add
-            </button>
-          </div>
-          <table className="table-todo">
+  componentDidMount = () => {
+    let data = localStorage.getItem("todos");
+    this.setState(
+      data != null
+        ? JSON.parse(data)
+        : {
+            userName: "JC",
+            todoItems: [
+              { action: "Read React book", done: false },
+              { action: "Fix Grid Issues", done: false },
+              { action: "Add modal functionality", done: false },
+              { action: "Add back the header/footer", done: false }
+            ],
+            showCompleted: true
+          }
+    );
+  };
+
+  render = () => (
+    <div>
+      <div className="todo-item-container">
+        <TodoBanner name={this.state.userName} tasks={this.state.todoItems} />
+        <div className="todo-item">
+          <TodoCreator callback={this.createNewToDo} />
+        </div>
+        <table className="table-todo">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Done</th>
+            </tr>
+          </thead>
+          <tbody>{this.todoTableRows(false)}</tbody>
+        </table>
+        <div className="completed-tasks">
+          <VisibilityControl
+            description="Completed Tasks"
+            isChecked={this.state.showCompleted}
+            callback={checked => this.setState({ showCompleted: checked })}
+          />
+        </div>
+
+        {this.state.showCompleted && (
+          <table className="table-complete">
             <thead>
               <tr>
                 <th>Description</th>
                 <th>Done</th>
               </tr>
             </thead>
-            <tbody>{this.todoTableRows()}</tbody>
+            <tbody>{this.todoTableRows(true)}</tbody>
           </table>
-        </div>
+        )}
       </div>
-    );
-  }
+    </div>
+  );
 }
